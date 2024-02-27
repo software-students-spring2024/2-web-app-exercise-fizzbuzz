@@ -15,3 +15,7 @@ See instructions. Delete this line and place the Product Vision Statement here.
 ### Sprints:
 - [Sprint 1](https://github.com/orgs/software-students-spring2024/projects/18)
 - [Sprint 2](https://github.com/orgs/software-students-spring2024/projects/19)
+
+## References:
+
+- [logo.png - Treasure icons created by Freepik - Flaticon](https://www.flaticon.com/free-icons/treasure)

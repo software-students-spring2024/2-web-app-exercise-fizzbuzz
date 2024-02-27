@@ -2,7 +2,10 @@ import pymongo
 from bson.objectid import ObjectId
 import datetime
 from dotenv import dotenv_values
-from flask import Flask, render_template, request, redirect, abort, url_for, make_response, send_from_directory
+from flask import Flask, render_template, request, redirect, abort, url_for, session, make_response, send_from_directory
+from flask_login import AnonymousUserMixin, login_required, LoginManager, login_user, current_user, logout_user
+from src.User import *
+from passlib.hash import pbkdf2_sha256
 
 
 # Loading development configurations
@@ -10,6 +13,7 @@ config = dotenv_values(".env")
 
 # Make flask app
 app = Flask(__name__)
+app.secret_key = config["FLASK_SECRET_KEY"]
 
 # Make a connection to the database server
 connection = pymongo.MongoClient("class-mongodb.cims.nyu.edu", 27017,
@@ -20,6 +24,7 @@ connection = pymongo.MongoClient("class-mongodb.cims.nyu.edu", 27017,
 # Select a specific database on the server
 db = connection[config["MONGO_DBNAME"]] 
 
+
 try:
     # verify the connection works by pinging the database
     connection.admin.command("ping")  # The ping command is cheap and does not require auth.
@@ -29,14 +34,84 @@ except Exception as e:
     print(" * MongoDB connection error:", e)  # debug
 
 
+# Login manager using flask-login
+login_manager = LoginManager()
+login_manager.init_app(app)
+users = db.SE_PROJECT2_users
 
-# Still figuring this out
-# @app.route('/<path:path>')
-# def send_report(path):
-#     return send_from_directory('public', path)
+@login_manager.user_loader
+def load_user(email):
+    user = User.get(email, users)
+    return user
+    
+
+@login_manager.request_loader
+def request_loader(request):
+    return User.get(None, users)
 
 @app.route('/')
+@login_required
 def show_home():
+    return render_template("index.html")
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    print("Dakhalna")
+    if request.method == 'GET':
+        if current_user.is_authenticated:
+            return redirect(url_for('logout'))
+        return render_template("login.html", error_message = '')
+    
+    if request.method == 'POST':
+        email = request.form['email']
+        if users.find_one({"_id": email}) and pbkdf2_sha256.verify(request.form['password'], users.find_one({"_id": email})['password']):
+            user = User(email)
+            login_user(user)
+            return redirect(url_for('show_home'))
+
+    return render_template("login.html", error_message = 'Incorrect email or password')
+
+
+@app.route('/protected')
+@login_required
+def protected():
+    print(current_user.is_authenticated)
+    return 'Logged in as: ' + current_user.id
+
+@app.route('/logout')
+@login_required
+def logout():
+    # session.clear()
+    logout_user()
+    print(current_user)
+    return redirect(url_for('login'))
+
+
+@login_manager.unauthorized_handler
+def unauthorized_handler():
+    return redirect(url_for('login'))
+
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'GET':
+        return render_template("register.html", error_message = '')
+    
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        if users.find_one({"_id": email}):
+            return render_template("register.html", error_message = 'Account with this email already exists')
+        users.insert_one({"_id": email, "password": pbkdf2_sha256.encrypt(password)})
+        user = User(email)
+        login_user(user)
+        return redirect(url_for('show_home'))
+
+        
+
+@app.route('/db_test')
+def show_db_test():
     # Document to add
     doc = {
         "name": "Foo Barstein",
@@ -72,10 +147,8 @@ def show_home():
 
 if __name__ == '__main__': 
     # use the PORT environment variable
-    FLASK_PORT = config["FLASK_PORT"]
-
+    
     # import logging
     # logging.basicConfig(filename='/home/ak8257/error.log',level=logging.DEBUG)
-    app.run(port=FLASK_PORT)
-    # Run flask 
-    app.run()
+    print(config["FLASK_PORT"])
+    app.run(port=config["FLASK_PORT"])
