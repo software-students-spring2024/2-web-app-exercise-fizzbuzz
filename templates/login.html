@@ -1,0 +1,31 @@
+{% extends 'login_register_base.html' %}
+
+{% block container %}
+
+    <section class="login_register">
+
+        <div class="container">
+
+            <div class="card">
+                <h1 class="card_title">Login to your account</h1>
+                <form class="card_form" action="/login" method="POST">
+                    <div class="input">
+                        <input class="input_field" type="text" name="email" placeholder="Email..." required>
+                        <label class="input_label" for="email">Email</label>
+                    </div>
+                    <div class="input">
+                        <input class="input_field" type="password" name="password" placeholder="Password..." required>
+                        <label class="input_label" for="password">Password</label>
+                    </div>
+                    <button class="card_button" type="submit">Log In</button>
+                </form>
+                <div class="card_info">
+                    <p>Not registered? <a href = "{{ url_for('register') }}">Create an account</a></p>
+                </div>
+            </div>
+
+        </div>
+
+    </section>
+
+{% endblock %}
