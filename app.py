@@ -106,14 +106,24 @@ def register():
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
+        nickname = request.form['nickname']
+        username = request.form['username']
         if users.find_one({"_id": email}):
             return render_template("register.html", error_message = 'Account with this email already exists')
-        users.insert_one({"_id": email, "password": pbkdf2_sha256.encrypt(password)})
+        users.insert_one({"_id": email, "password": pbkdf2_sha256.encrypt(password), "nickname": nickname, "username": username})
         user = User(email)
         login_user(user)
         return redirect(url_for('show_home'))
 
-        
+@app.route("/profile/<string:username>", methods=['GET'])
+def show_profile(username):
+    user = users.find_one({"username": username})
+
+    friends_size = len(user.get('friends', []))
+    bookmarks_size = len(user.get('bookmarks', []))
+    
+    return render_template("profile.html", user=user, friends_size=friends_size, bookmarks_size = bookmarks_size)
+
 
 @app.route('/db_test')
 def show_db_test():

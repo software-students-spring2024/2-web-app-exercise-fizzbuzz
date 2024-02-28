@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Treasure Trove</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <link
+      rel="icon"
+      href="{{ url_for('static', filename='img/logo.png') }}"
+    />
+  </head>
+  <body>
+    <div class="back-button"> &lt;&lt; </div>
+    <main>{% block container %} {% endblock %}</main>
+    <div class="footer_">
+        <button class="footer_button">Home</button>
+        <button class="footer_button">Gift</button>
+        <button class="footer_button">Profile</button>
+    </div>
+  </body>
+</html>
