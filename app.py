@@ -6,6 +6,7 @@ from flask import Flask, render_template, request, redirect, abort, url_for, ses
 from flask_login import AnonymousUserMixin, login_required, LoginManager, login_user, current_user, logout_user
 from src.User import *
 from passlib.hash import pbkdf2_sha256
+from src.NestedCollection import *
 
 
 # Loading development configurations
@@ -24,7 +25,6 @@ connection = pymongo.MongoClient("class-mongodb.cims.nyu.edu", 27017,
 # Select a specific database on the server
 db = connection[config["MONGO_DBNAME"]] 
 
-
 try:
     # verify the connection works by pinging the database
     connection.admin.command("ping")  # The ping command is cheap and does not require auth.
@@ -37,7 +37,12 @@ except Exception as e:
 # Login manager using flask-login
 login_manager = LoginManager()
 login_manager.init_app(app)
-users = db.SE_PROJECT2_users
+
+SE2_DB= NestedCollection(db.nested_collections.find_one({"name": "SE_Project2"}), db)
+
+users = SE2_DB["users"]
+
+# projects = SE2_DB["posts"]
 
 @login_manager.user_loader
 def load_user(email):
