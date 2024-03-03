@@ -5,8 +5,8 @@ from dotenv import dotenv_values
 from flask import Flask, render_template, request, redirect, abort, url_for, session, make_response, send_from_directory
 from flask_login import AnonymousUserMixin, login_required, LoginManager, login_user, current_user, logout_user
 from src.User import *
-from passlib.hash import pbkdf2_sha256
 from src.NestedCollection import *
+from src.Post import *
 
 
 # Loading development configurations
@@ -38,65 +38,47 @@ except Exception as e:
 login_manager = LoginManager()
 login_manager.init_app(app)
 
-SE2_DB= NestedCollection(db.nested_collections.find_one({"name": "SE_Project2"}), db)
+if (not db.nested_collections.find_one({"name": "SE_Project2"})):
+    db.nested_collections.insert({"name": "SE_Project2", "children": []})
+SE2_DB= NestedCollection("SE_Project2", db)
 
-users = SE2_DB["users"]
+if "users" not in SE2_DB:
+    SE2_DB.add_collection("users", "SE_PROJECT2_users")
+User.users = SE2_DB["users"]
 
-# projects = SE2_DB["posts"]
+if "posts" not in SE2_DB:
+    SE2_DB.add_collection("posts", "SE_PROJECT2_posts")
+Post.posts = SE2_DB["posts"]
+
+# To be replaced with fetching from database
+# all_posts = [Post(ObjectId(), "Post 1", ['happy', 'joy', 'excited'], ObjectId()),
+#                 Post(ObjectId(), "Post 2", ['sad', 'upset', 'unhappy'], ObjectId()), 
+#                 Post(ObjectId(), "Post 3", ['happy', 'calm', 'relaxation'], ObjectId()), 
+#                 Post(ObjectId(), "Post 4", ['upset', 'depressed'], ObjectId()),
+#                 Post(ObjectId(), "Post 5", ['dance', 'party', 'joy'], ObjectId()),
+#                 Post(ObjectId(), "Post 6", ['happy', 'glad'], ObjectId()),
+#                 Post(ObjectId(), "Post 7", ['book', 'library'], ObjectId()),
+#                 Post(ObjectId(), "Post 8", ['rage', 'anger', 'upset'], ObjectId()),]
+
+if "chats" not in SE2_DB:
+    SE2_DB.add_collection("chats", "SE_PROJECT2_chats")
+chats = SE2_DB["chats"]
+
+
+# Signing up and logging in
 
 @login_manager.user_loader
-def load_user(email):
-    user = User.get(email, users)
+def load_user(id):
+    user = User.get(id)
     return user
     
-
 @login_manager.request_loader
 def request_loader(request):
-    return User.get(None, users)
-
-@app.route('/')
-@login_required
-def show_home():
-    return render_template("index.html")
-
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    print("Dakhalna")
-    if request.method == 'GET':
-        if current_user.is_authenticated:
-            return redirect(url_for('logout'))
-        return render_template("login.html", error_message = '')
-    
-    if request.method == 'POST':
-        email = request.form['email']
-        if users.find_one({"_id": email}) and pbkdf2_sha256.verify(request.form['password'], users.find_one({"_id": email})['password']):
-            user = User(email)
-            login_user(user)
-            return redirect(url_for('show_home'))
-
-    return render_template("login.html", error_message = 'Incorrect email or password')
-
-
-@app.route('/protected')
-@login_required
-def protected():
-    print(current_user.is_authenticated)
-    return 'Logged in as: ' + current_user.id
-
-@app.route('/logout')
-@login_required
-def logout():
-    # session.clear()
-    logout_user()
-    print(current_user)
-    return redirect(url_for('login'))
-
+    return User.get(None)
 
 @login_manager.unauthorized_handler
 def unauthorized_handler():
     return redirect(url_for('login'))
-
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -104,66 +86,109 @@ def register():
         return render_template("register.html", error_message = '')
     
     if request.method == 'POST':
+        username = request.form['username']
         email = request.form['email']
         password = request.form['password']
-        nickname = request.form['nickname']
-        username = request.form['username']
-        if users.find_one({"_id": email}):
+        confirm_password = request.form['confirm_password']
+        if User.already_exists(username = username):
+            return render_template("register.html", error_message = 'Account with this username already exists')
+        if User.already_exists(email = email):
             return render_template("register.html", error_message = 'Account with this email already exists')
-        users.insert_one({"_id": email, "password": pbkdf2_sha256.encrypt(password), "nickname": nickname, "username": username})
-        user = User(email)
+        if password != confirm_password:
+            return render_template("register.html", error_message = "Passwords don't match")
+        user = User(username=username, email=email, password=password)
         login_user(user)
-        return redirect(url_for('show_home'))
+        return redirect(url_for('home'))
 
 @app.route("/profile/<string:username>", methods=['GET'])
 def show_profile(username):
-    user = users.find_one({"username": username})
+    user = User.get_username(username)
+    if(user == None):
+        # give page that says user not found
+        return render_template("user_not_found.html")
+    elif(current_user.username == username):
+        friends_size = len(user.get('friends', []))
+        bookmarks_size = len(user.get('bookmarks', []))
+        
+        return render_template("profile.html", user=user, friends_size=friends_size, bookmarks_size = bookmarks_size)
+    else:
+        friend=False
+        for possible_friend in current_user.friends:
+            document_possible_friend = User.users.find_one({'_id': possible_friend})
+            if document_possible_friend['username']==username:
+                friend=True
+                break
+        if(friend == True):
+            # give page that says user is friend 
+            return render_template("profile_is_friend.html")
+        else:
+            # give page that says user is not friend 
+            return render_template("profile_is_not_friend.html")
 
-    friends_size = len(user.get('friends', []))
-    bookmarks_size = len(user.get('bookmarks', []))
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'GET':
+        if current_user.is_authenticated:
+            return redirect(url_for('logout'))
+        return render_template("login.html", error_message = '')
     
-    return render_template("profile.html", user=user, friends_size=friends_size, bookmarks_size = bookmarks_size)
+    if request.method == 'POST':
+        username_email = request.form['username_email']
+        password = request.form['password']
+        user = User.login(username_email, password)
+        if user:
+            login_user(user)
+            return redirect(url_for('home'))
+
+    return render_template("login.html", error_message = 'Incorrect email or password')
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
 
 
-@app.route('/db_test')
-def show_db_test():
-    # Document to add
-    doc = {
-        "name": "Foo Barstein",
-        "email": "fb1258@nyu.edu",
-        "message": "We loved with a love that was more than love.\n -Edgar Allen Poe"
-    }
+# Main Pages
 
-    # Adding document to test collection
-    db.test_collection.insert_one(doc)
+@app.route('/')
+@login_required
+def show():
+    return redirect(url_for('home'))
 
-    # Find and print
-    found = db.test_collection.find_one({
-        "name": "Foo Barstein"
-    })
+@app.route('/home', methods=["GET", "POST"])
+@login_required
+def home(query= None):
+    if request.method == "POST":
+        Post.toggle_in_current_user(request.form.get('post_id'), current_user)
+        return redirect(url_for("home", query= session['query'] if 'query' in session else None))
+            
+    # request.method = "GET"
+    print(request.query_string)
+    query = request.args.get('query') if (request.query_string != b'') else query if query else None
+    if query == '':
+        session['query'] = query
+        query = None
+    query_labels = []
+    if query is not None:
+        session['query'] = query
+        query_labels = [label.strip() for label in query.split(' ')]
+    posts = Post.fetch_posts(current_user= current_user, query_labels= query_labels)
+    return render_template("home.html", query_type="posts", posts = posts)
 
-    # Formatting
-    output = '{name} ({email}) - {message}'.format(
-        name=found["name"],
-        email=found["email"],
-        message=found["message"]
-    )
+@app.route('/gift')
+@login_required
+def gift():
+    return "Page not available yet"
 
-    print(output)
-
-    # Deleting everything
-    db.test_collection.delete_many({
-        "email": "fb1258@nyu.edu"
-    })
-    response = make_response(output, 200) # put together an HTTP response with success code 200
-    response.mimetype = "text/plain" # set the HTTP Content-type header to inform the browser that the returned document is plain text, not HTML
-    return response # the return value is sent as the response to the web browser
-
+@app.route('/profile')
+@login_required
+def profile():
+    return "Page not available yet"
 
 if __name__ == '__main__': 
     # use the PORT environment variable
     
     # import logging
     # logging.basicConfig(filename='/home/ak8257/error.log',level=logging.DEBUG)
-    print(config["FLASK_PORT"])
     app.run(port=config["FLASK_PORT"])

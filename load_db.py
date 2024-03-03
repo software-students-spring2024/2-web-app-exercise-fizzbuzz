@@ -1,5 +1,6 @@
 import pymongo
 from dotenv import dotenv_values
+from src.NestedCollection import *
 
 
 # Loading development configurations
@@ -13,3 +14,5 @@ connection = pymongo.MongoClient("class-mongodb.cims.nyu.edu", 27017,
 
 # Select a specific database on the server
 db = connection[config["MONGO_DBNAME"]] 
+
+SE2_DB= NestedCollection("SE_Project2", db)
