@@ -8,7 +8,15 @@
         {% for post in posts %}
             <li>
                 <div class ="card">
-                    {{post.title}} : {{post.labels}}
+                    {{post.title}} : {{post.labels}} : {{post.id}}
+                    <form action = "/home" method="POST">
+                        <input type="hidden" name="post_id" value="{{post.id}}" />
+                        {% if post.liked %}
+                            <button type="submit">unlike</button>
+                        {% else %}
+                            <button type="submit">like</button>
+                        {% endif %}
+                    </form>
                 </div>
             </li>
         {% endfor %}
