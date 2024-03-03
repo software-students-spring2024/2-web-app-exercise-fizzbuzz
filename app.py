@@ -184,7 +184,8 @@ def gift():
 @app.route('/profile')
 @login_required
 def profile():
-    return "Page not available yet"
+    return redirect(url_for('profile/' + current_user.username))
+
 
 if __name__ == '__main__': 
     # use the PORT environment variable
