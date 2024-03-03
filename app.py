@@ -5,7 +5,6 @@ from dotenv import dotenv_values
 from flask import Flask, render_template, request, redirect, abort, url_for, session, make_response, send_from_directory
 from flask_login import AnonymousUserMixin, login_required, LoginManager, login_user, current_user, logout_user
 from src.User import *
-from passlib.hash import pbkdf2_sha256
 from src.NestedCollection import *
 from src.Post import *
 
@@ -45,7 +44,7 @@ SE2_DB= NestedCollection("SE_Project2", db)
 
 if "users" not in SE2_DB:
     SE2_DB.add_collection("users", "SE_PROJECT2_users")
-users = SE2_DB["users"]
+User.users = SE2_DB["users"]
 
 if "posts" not in SE2_DB:
     SE2_DB.add_collection("posts", "SE_PROJECT2_posts")
@@ -69,13 +68,13 @@ chats = SE2_DB["chats"]
 # Signing up and logging in
 
 @login_manager.user_loader
-def load_user(email):
-    user = User.get(email, users)
+def load_user(id):
+    user = User.get(id)
     return user
     
 @login_manager.request_loader
 def request_loader(request):
-    return User.get(None, users)
+    return User.get(None)
 
 @login_manager.unauthorized_handler
 def unauthorized_handler():
@@ -87,14 +86,19 @@ def register():
         return render_template("register.html", error_message = '')
     
     if request.method == 'POST':
+        username = request.form['username']
         email = request.form['email']
         password = request.form['password']
-        if users.find_one({"_id": email}):
+        confirm_password = request.form['confirm_password']
+        if User.already_exists(username = username):
+            return render_template("register.html", error_message = 'Account with this username already exists')
+        if User.already_exists(email = email):
             return render_template("register.html", error_message = 'Account with this email already exists')
-        users.insert_one({"_id": email, "password": pbkdf2_sha256.encrypt(password)})
-        user = User(email)
+        if password != confirm_password:
+            return render_template("register.html", error_message = "Passwords don't match")
+        user = User(username=username, email=email, password=password)
         login_user(user)
-        return redirect(url_for('show_home'))
+        return redirect(url_for('home'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -104,9 +108,10 @@ def login():
         return render_template("login.html", error_message = '')
     
     if request.method == 'POST':
-        email = request.form['email']
-        if users.find_one({"_id": email}) and pbkdf2_sha256.verify(request.form['password'], users.find_one({"_id": email})['password']):
-            user = User(email)
+        username_email = request.form['username_email']
+        password = request.form['password']
+        user = User.login(username_email, password)
+        if user:
             login_user(user)
             return redirect(url_for('home'))
 
@@ -140,11 +145,9 @@ def home():
     posts = []
     if (request.query_string != b'' and request.args.get('query') != ''):
         query_labels = [label.strip() for label in request.args.get('query').split(' ')]
-        print(query_labels)
         posts = [post for post in all_posts if post.matches_query(query_labels) ]
     else:
         posts = all_posts[:4]
-        print("No queries received")
     return render_template("home.html", query_type="posts", posts = posts)
 
 @app.route('/gift')
@@ -162,5 +165,4 @@ if __name__ == '__main__':
     
     # import logging
     # logging.basicConfig(filename='/home/ak8257/error.log',level=logging.DEBUG)
-    print(config["FLASK_PORT"])
     app.run(port=config["FLASK_PORT"])

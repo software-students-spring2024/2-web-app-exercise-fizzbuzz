@@ -1,12 +1,75 @@
+from __future__ import annotations
 from flask_login import UserMixin
+from typing import List, Dict, AnyStr, Union
+from bson.objectid import ObjectId
+from pymongo import MongoClient, cursor, collection
+from passlib.hash import pbkdf2_sha256
+
 
 class User(UserMixin):
-    def __init__(self, id):
-        self.id = id
+    users : collection = None
 
-    def get(email, users):
-        if email == None or not users.find_one({"_id" : email}):
+    def __init__(self, email: AnyStr, username: AnyStr, password: AnyStr, measurements: List = [], posts: List = [], friends: List = [], id: ObjectId = None) -> None:
+        self.email = email.lower()
+        self.username = username
+        self.measurements = measurements[:]
+        self.posts = posts[:]
+        self.friends = friends[:]
+        if id:
+            self.id = id
+            self.password = password # Already encrypted
+        else:
+            self.password = pbkdf2_sha256.encrypt(password) # Encrypt before storing
+            User.users.insert_one(self.to_BSON())
+            self.id = User.users.find_one({'email': self.email})['_id']   
+        super().__init__()
+
+    def get_id(self):
+        return str(self.id)
+    
+    def to_BSON(self) -> Dict:
+        bson_dict = {}
+        bson_dict["email"] = self.email
+        bson_dict["username"] = self.username
+        bson_dict["password"] = self.password
+        bson_dict["measurements"] = self.measurements[:]
+        bson_dict["posts"] = self.posts[:]
+        bson_dict["friends"] = self.friends[:]
+        return bson_dict
+    
+    def from_BSON(bson_dict: Dict) -> User:
+        if not bson_dict:
             return None
-        user = User(email)
+        return User(email= bson_dict["email"],
+                    username= bson_dict["username"],
+                    password= bson_dict["password"],
+                    measurements= bson_dict["measurements"],
+                    posts= bson_dict["posts"],
+                    friends= bson_dict["friends"],
+                    id= bson_dict["_id"])
+    
+    def already_exists(email = "", username = ""):
+        if email == "" and username == "":
+            return True
+        return User.users.find_one({'email': email.lower()}) or User.users.find_one({'username': username})
+    
+    def get(id: ObjectId) -> Union[User, None]:
+        print("Id received: ", id)
+        user = User.from_BSON(User.users.find_one({"_id" : ObjectId(id)}))
+        if not user:
+            user = None
         return user
     
+    def __repr__(self) -> AnyStr:
+        return "ID: " + str(self.id) + " - Email: " + self.email
+    
+    def login(username_email: AnyStr, password: AnyStr) -> Union[User, None]:
+        user = User.from_BSON(User.users.find_one({"email" : username_email.lower()}))
+        if not user:
+            user = User.from_BSON(User.users.find_one({"username" : username_email}))
+        if not user:
+            user = None
+        if user:
+            if not pbkdf2_sha256.verify(password, user.password):
+                user = None
+        return user
