@@ -38,7 +38,7 @@ except Exception as e:
 login_manager = LoginManager()
 login_manager.init_app(app)
 
-SE2_DB= NestedCollection(db.nested_collections.find_one({"name": "SE_Project2"}), db)
+SE2_DB= NestedCollection("SE_Project2", db)
 
 users = SE2_DB["users"]
 
