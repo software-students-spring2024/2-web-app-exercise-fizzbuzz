@@ -7,6 +7,7 @@ class Post:
         self.title = title
         self.labels = labels[:]
         self.author = author
+        self.liked = False
 
     def matches_query(self, query_labels: List[AnyStr]) -> bool:
         matches = False
@@ -19,6 +20,12 @@ class Post:
     
     def get_id(self) -> ObjectId:
         return self.id
+    
+    def toggle_like(self) -> None:
+        self.liked = not self.liked
+    
+    def is_liked(self) -> bool:
+        return self.liked
 
     def get_title(self) -> AnyStr:
         return self.title
