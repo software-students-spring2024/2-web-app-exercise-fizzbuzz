@@ -90,3 +90,9 @@ class User(UserMixin):
             if not pbkdf2_sha256.verify(password, user.password):
                 user = None
         return user
+
+    def get_username(username) -> Union[User, None]:
+        user = User.from_BSON(User.users.find_one({"username": username}))
+        if not user:
+            user = None
+        return user
