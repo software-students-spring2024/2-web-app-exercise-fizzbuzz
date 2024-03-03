@@ -48,17 +48,17 @@ User.users = SE2_DB["users"]
 
 if "posts" not in SE2_DB:
     SE2_DB.add_collection("posts", "SE_PROJECT2_posts")
-posts = SE2_DB["posts"]
+Post.posts = SE2_DB["posts"]
 
 # To be replaced with fetching from database
-all_posts = [Post(ObjectId(), "Post 1", ['happy', 'joy', 'excited'], ObjectId()),
-                Post(ObjectId(), "Post 2", ['sad', 'upset', 'unhappy'], ObjectId()), 
-                Post(ObjectId(), "Post 3", ['happy', 'calm', 'relaxation'], ObjectId()), 
-                Post(ObjectId(), "Post 4", ['upset', 'depressed'], ObjectId()),
-                Post(ObjectId(), "Post 5", ['dance', 'party', 'joy'], ObjectId()),
-                Post(ObjectId(), "Post 6", ['happy', 'glad'], ObjectId()),
-                Post(ObjectId(), "Post 7", ['book', 'library'], ObjectId()),
-                Post(ObjectId(), "Post 8", ['rage', 'anger', 'upset'], ObjectId()),]
+# all_posts = [Post(ObjectId(), "Post 1", ['happy', 'joy', 'excited'], ObjectId()),
+#                 Post(ObjectId(), "Post 2", ['sad', 'upset', 'unhappy'], ObjectId()), 
+#                 Post(ObjectId(), "Post 3", ['happy', 'calm', 'relaxation'], ObjectId()), 
+#                 Post(ObjectId(), "Post 4", ['upset', 'depressed'], ObjectId()),
+#                 Post(ObjectId(), "Post 5", ['dance', 'party', 'joy'], ObjectId()),
+#                 Post(ObjectId(), "Post 6", ['happy', 'glad'], ObjectId()),
+#                 Post(ObjectId(), "Post 7", ['book', 'library'], ObjectId()),
+#                 Post(ObjectId(), "Post 8", ['rage', 'anger', 'upset'], ObjectId()),]
 
 if "chats" not in SE2_DB:
     SE2_DB.add_collection("chats", "SE_PROJECT2_chats")
@@ -133,21 +133,22 @@ def show():
 
 @app.route('/home', methods=["GET", "POST"])
 @login_required
-def home():
+def home(query= None):
     if request.method == "POST":
-        for i in range(len(all_posts)):
-            if str(all_posts[i].get_id()) == request.form.get('post_id'):
-                all_posts[i].toggle_like()
-                return redirect(url_for("home"))
-        return redirect(url_for("home"))
+        Post.toggle_in_current_user(request.form.get('post_id'), current_user)
+        return redirect(url_for("home", query= session['query'] if 'query' in session else None))
             
     # request.method = "GET"
-    posts = []
-    if (request.query_string != b'' and request.args.get('query') != ''):
-        query_labels = [label.strip() for label in request.args.get('query').split(' ')]
-        posts = [post for post in all_posts if post.matches_query(query_labels) ]
-    else:
-        posts = all_posts[:4]
+    print(request.query_string)
+    query = request.args.get('query') if (request.query_string != b'') else query if query else None
+    if query == '':
+        session['query'] = query
+        query = None
+    query_labels = []
+    if query is not None:
+        session['query'] = query
+        query_labels = [label.strip() for label in query.split(' ')]
+    posts = Post.fetch_posts(current_user= current_user, query_labels= query_labels)
     return render_template("home.html", query_type="posts", posts = posts)
 
 @app.route('/gift')
