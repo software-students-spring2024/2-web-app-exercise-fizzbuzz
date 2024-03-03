@@ -1,7 +1,11 @@
 from typing import List, Dict, AnyStr
 from bson.objectid import ObjectId
+from pymongo import MongoClient, cursor, collection
 
 class Post:
+
+    posts: collection = None
+
     def __init__(self, id: ObjectId, title: AnyStr, labels: List[AnyStr], author: ObjectId) -> None:
         self.id = id
         self.title = title
@@ -45,3 +49,4 @@ class Post:
         bson_dict["title"] = self.title
         bson_dict["labels"] = self.labels[:]
         bson_dict["author"] = self.author
+        return bson_dict
