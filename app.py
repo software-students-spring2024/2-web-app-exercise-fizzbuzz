@@ -7,6 +7,7 @@ from flask_login import AnonymousUserMixin, login_required, LoginManager, login_
 from src.User import *
 from passlib.hash import pbkdf2_sha256
 from src.NestedCollection import *
+from src.Post import *
 
 
 # Loading development configurations
@@ -38,65 +39,37 @@ except Exception as e:
 login_manager = LoginManager()
 login_manager.init_app(app)
 
+if (not db.nested_collections.find_one({"name": "SE_Project2"})):
+    db.nested_collections.insert({"name": "SE_Project2", "children": []})
 SE2_DB= NestedCollection("SE_Project2", db)
 
+if "users" not in SE2_DB:
+    SE2_DB.add_collection("users", "SE_PROJECT2_users")
 users = SE2_DB["users"]
 
-# projects = SE2_DB["posts"]
+if "posts" not in SE2_DB:
+    SE2_DB.add_collection("posts", "SE_PROJECT2_posts")
+posts = SE2_DB["posts"]
+
+if "chats" not in SE2_DB:
+    SE2_DB.add_collection("chats", "SE_PROJECT2_chats")
+chats = SE2_DB["chats"]
+
+
+# Signing up and logging in
 
 @login_manager.user_loader
 def load_user(email):
     user = User.get(email, users)
     return user
     
-
 @login_manager.request_loader
 def request_loader(request):
     return User.get(None, users)
 
-@app.route('/')
-@login_required
-def show_home():
-    return render_template("index.html")
-
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    print("Dakhalna")
-    if request.method == 'GET':
-        if current_user.is_authenticated:
-            return redirect(url_for('logout'))
-        return render_template("login.html", error_message = '')
-    
-    if request.method == 'POST':
-        email = request.form['email']
-        if users.find_one({"_id": email}) and pbkdf2_sha256.verify(request.form['password'], users.find_one({"_id": email})['password']):
-            user = User(email)
-            login_user(user)
-            return redirect(url_for('show_home'))
-
-    return render_template("login.html", error_message = 'Incorrect email or password')
-
-
-@app.route('/protected')
-@login_required
-def protected():
-    print(current_user.is_authenticated)
-    return 'Logged in as: ' + current_user.id
-
-@app.route('/logout')
-@login_required
-def logout():
-    # session.clear()
-    logout_user()
-    print(current_user)
-    return redirect(url_for('login'))
-
-
 @login_manager.unauthorized_handler
 def unauthorized_handler():
     return redirect(url_for('login'))
-
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -113,42 +86,69 @@ def register():
         login_user(user)
         return redirect(url_for('show_home'))
 
-        
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    print("Dakhalna")
+    if request.method == 'GET':
+        if current_user.is_authenticated:
+            return redirect(url_for('logout'))
+        return render_template("login.html", error_message = '')
+    
+    if request.method == 'POST':
+        email = request.form['email']
+        if users.find_one({"_id": email}) and pbkdf2_sha256.verify(request.form['password'], users.find_one({"_id": email})['password']):
+            user = User(email)
+            login_user(user)
+            return redirect(url_for('home'))
 
-@app.route('/db_test')
-def show_db_test():
-    # Document to add
-    doc = {
-        "name": "Foo Barstein",
-        "email": "fb1258@nyu.edu",
-        "message": "We loved with a love that was more than love.\n -Edgar Allen Poe"
-    }
+    return render_template("login.html", error_message = 'Incorrect email or password')
 
-    # Adding document to test collection
-    db.test_collection.insert_one(doc)
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    print(current_user)
+    return redirect(url_for('login'))
 
-    # Find and print
-    found = db.test_collection.find_one({
-        "name": "Foo Barstein"
-    })
 
-    # Formatting
-    output = '{name} ({email}) - {message}'.format(
-        name=found["name"],
-        email=found["email"],
-        message=found["message"]
-    )
+# Main Pages
 
-    print(output)
+@app.route('/')
+@login_required
+def show():
+    return redirect(url_for('home'))
 
-    # Deleting everything
-    db.test_collection.delete_many({
-        "email": "fb1258@nyu.edu"
-    })
-    response = make_response(output, 200) # put together an HTTP response with success code 200
-    response.mimetype = "text/plain" # set the HTTP Content-type header to inform the browser that the returned document is plain text, not HTML
-    return response # the return value is sent as the response to the web browser
+@app.route('/home')
+@login_required
+def home():
+    # To be replaced with fetching from database
+    all_posts = [Post(ObjectId(), "Post 1", ['happy', 'joy', 'excited'], ObjectId()),
+                 Post(ObjectId(), "Post 2", ['sad', 'upset', 'unhappy'], ObjectId()), 
+                 Post(ObjectId(), "Post 3", ['happy', 'calm', 'relaxation'], ObjectId()), 
+                 Post(ObjectId(), "Post 4", ['upset', 'depressed'], ObjectId()),
+                 Post(ObjectId(), "Post 5", ['dance', 'party', 'joy'], ObjectId()),
+                 Post(ObjectId(), "Post 6", ['happy', 'glad'], ObjectId()),
+                 Post(ObjectId(), "Post 7", ['book', 'library'], ObjectId()),
+                 Post(ObjectId(), "Post 8", ['rage', 'anger', 'upset'], ObjectId()),]
+    posts = []
+    if (request.query_string != b'' and request.args.get('query') != ''):
+        query_labels = [label.strip() for label in request.args.get('query').split(' ')]
+        print(query_labels)
+        posts = [post for post in all_posts if post.matches_query(query_labels) ]
+    else:
+        posts = all_posts[:4]
+        print("No queries received")
+    return render_template("home.html", query_type="posts", posts = posts)
 
+@app.route('/gift')
+@login_required
+def gift():
+    return "Page not available yet"
+
+@app.route('/profile')
+@login_required
+def profile():
+    return "Page not available yet"
 
 if __name__ == '__main__': 
     # use the PORT environment variable
