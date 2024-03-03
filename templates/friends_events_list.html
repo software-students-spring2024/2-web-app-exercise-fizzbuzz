@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>Events</h1>
+
+<h1>Friends</h1>
+<ul>
+    {% for friend in friends %}
+    <li>
+      <a href="{{ url_for('show_friend_events', friend_id=friend._id) }}">{{ friend.name }}</a>
+    </li>
+    {% else %}
+    <li>No friends found.</li>
+    {% endfor %}
+  </ul>
+
+{% endblock %}

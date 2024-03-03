@@ -92,6 +92,18 @@ def logout():
     print(current_user)
     return redirect(url_for('login'))
 
+@app.route('/friends-events')
+@login_required
+def show_friends_events():
+    user_data = users.find_one({"_id": current_user.id})
+    print("User data: ", user_data)
+    friends_list= user_data.get("friends", [])
+    print("Friends list: ", friends_list)
+    friends_data = [users.find_one({"_id": friend_id}) for friend_id in friends_list]
+    friends_data = [friend for friend in friends_data if friend is not None]
+    
+    return render_template("friends_events_list.html", friends = friends_data)
+
 
 @login_manager.unauthorized_handler
 def unauthorized_handler():
