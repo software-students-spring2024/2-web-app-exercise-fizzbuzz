@@ -9,7 +9,7 @@ from passlib.hash import pbkdf2_sha256
 class User(UserMixin):
     users : collection = None
 
-    def __init__(self, email: AnyStr, username: AnyStr, password: AnyStr, measurements: List = [], posts: List = [], friends: List = [], id: ObjectId = None) -> None:
+    def __init__(self, email: AnyStr, username: AnyStr, password: AnyStr, measurements: Dict = {}, posts: List[ObjectId] = [], friends: List = [], id: ObjectId = None) -> None:
         self.email = email.lower()
         self.username = username
         self.measurements = measurements[:]
@@ -24,11 +24,29 @@ class User(UserMixin):
             self.id = User.users.find_one({'email': self.email})['_id']   
         super().__init__()
 
+    def update_db(self):
+        User.users.replace_one({'_id': self.id}, self.to_BSON())
+
+    def like_post(self, post_id: ObjectId) -> None:
+        self.posts.append(post_id)
+        self.update_db()
+
+    def unlike_post(self, post_id: ObjectId) -> bool:
+        for i in range(len(self.posts)):
+            if str(post_id) == str(self.posts[i]):
+                print("Found at ", i)
+                self.posts.pop(i)
+                self.update_db()
+                return True
+        print("None found")
+        return False
+
     def get_id(self):
         return str(self.id)
     
     def to_BSON(self) -> Dict:
         bson_dict = {}
+        bson_dict["_id"] = self.id
         bson_dict["email"] = self.email
         bson_dict["username"] = self.username
         bson_dict["password"] = self.password
@@ -54,7 +72,6 @@ class User(UserMixin):
         return User.users.find_one({'email': email.lower()}) or User.users.find_one({'username': username})
     
     def get(id: ObjectId) -> Union[User, None]:
-        print("Id received: ", id)
         user = User.from_BSON(User.users.find_one({"_id" : ObjectId(id)}))
         if not user:
             user = None
