@@ -206,6 +206,14 @@ def gift():
 def profile():
     return redirect('/profile/'+current_user.username)
 
+@app.route('/friends-events')
+@login_required
+def friends_events():
+    friends_list = current_user.friends
+    return render_template('friends_events.html', friends=friends_list)
+  
+
+
 
 if __name__ == '__main__': 
     # use the PORT environment variable

@@ -1,14 +1,11 @@
 {% extends 'base_search.html' %}
-
-{% block content %}
-<h1>Friends</h1>
-<ul>
+{% block container %}
+  <h1>Friends</h1>
+  <ul>
     {% for friend in friends %}
-    <li>
-      <a href="{{ url_for('user', username=friend.username) }}">{{ friend.username }}</a>
-    </li>
-    {% else %}
-    <li>No friends found.</li>
-    {% endfor %}
+    <li>{{ friend }}</li>
+{% else %}
+    <p>No friends to show.</p>
+{% endfor %}
   </ul>
 {% endblock %}
