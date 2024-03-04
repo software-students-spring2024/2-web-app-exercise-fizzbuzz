@@ -101,7 +101,8 @@ def show_profile(username):
     user = User.get_from_username(username)
     if(user == None):
         # give page that says user not found
-        return render_template("profile_not_found.html")
+        print("Hello??")
+        return render_template("profile.html", type="nf", user=current_user, title= username)
     elif(current_user.username == username):
         if(request.method=="GET"):
             friends_size = len(user.friends)
@@ -110,7 +111,7 @@ def show_profile(username):
             if hasattr(request, 'query_string'):
                 if request.args.get('mode') == 'editing':
                     editing = True
-            return render_template("profile.html", user=user, title= user.username, editing = editing, friends_size=friends_size, bookmarks_size = bookmarks_size)
+            return render_template("profile.html", type="current", user=user, title= user.username, editing = editing, friends_size=friends_size, bookmarks_size = bookmarks_size)
         if(request.method=="POST"):
             # Assuming you have a method in your User class to update sizes
             User.update_sizes(user, request.form) #can change username to current_user.username
@@ -126,13 +127,13 @@ def show_profile(username):
             # give page that says user is friend 
             friends_size = len(user.friends)
             bookmarks_size = len(user.posts)
-            return render_template("profile_is_friend.html",user=user, friends_size=friends_size,bookmarks_size=bookmarks_size)
+            return render_template("profile.html", type="friend",title= user.username, user=user, friends_size=friends_size,bookmarks_size=bookmarks_size)
         else:
             # give page that says user is not friend 
             if(request.method=="GET"):
                 friends_size = len(user.friends)
                 bookmarks_size = len(user.posts)
-                return render_template("profile_is_not_friend.html", user=user,friends_size=friends_size,bookmarks_size=bookmarks_size)
+                return render_template("profile.html", type="stranger", title= user.username, user=user,friends_size=friends_size,bookmarks_size=bookmarks_size)
             if(request.method=="POST"):
                 User.add_friend_from_profile(user,current_user)
                 return redirect(url_for('show_profile', username=username))
@@ -207,9 +208,9 @@ def home(query= None):
             
     # request.method = "GET"
     query = request.args.get('query') if (request.query_string != b'') else query if query else None
-    if query == '':
-        session['query'] = query
-        query = None
+    # if query == '':
+    #     session['query'] = query
+    #     query = None
     query_labels = []
     if query is not None:
         session['query'] = query
@@ -236,8 +237,12 @@ def profile():
 @app.route('/gift')
 @login_required
 def gift():
+    query = request.args.get('query') if (request.query_string != b'') else None
+    if query is not None:
+        print('profile/' + query)
+        return redirect('profile/' + query)
     friends_list = current_user.friends
-    return render_template('friends_events.html', friends=friends_list)
+    return render_template('gift.html', friends=friends_list, query_type='friends', action='/gift', button_text='DMs', search_action='/gift')
   
 
 
