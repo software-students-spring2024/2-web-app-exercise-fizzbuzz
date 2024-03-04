@@ -8,7 +8,7 @@ Dhiyaa Al Jorf
 
 Firas Darwish
 
-Shubhi Upadhyay (originally in team-p2, switching to team-fizzbuzz
+Shubhi Upadhyay (originally in team-p2, switching to team-fizzbuzz)
 
 ## Product vision statement
 
