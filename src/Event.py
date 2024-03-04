@@ -37,7 +37,7 @@ class Event():
         bson_dict = {}
         if hasattr(self, 'id'):
             bson_dict["_id"] = self.id
-        bson_dict['eventhost']=self.hostname
+        bson_dict['eventhost']=self.eventhost
         bson_dict["eventname"] = self.eventname
         bson_dict["time"] = self.time
         bson_dict["date"] = self.date
