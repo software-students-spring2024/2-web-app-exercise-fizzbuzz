@@ -107,8 +107,8 @@ def show_profile(username):
         # give page that says user not found
         return render_template("user_not_found.html")
     elif(current_user.username == username):
-        friends_size = len(user.get('friends', []))
-        bookmarks_size = len(user.get('bookmarks', []))
+        friends_size = len(user.friends)
+        bookmarks_size = len(user.posts)
         
         return render_template("profile.html", user=user, friends_size=friends_size, bookmarks_size = bookmarks_size)
     else:
@@ -184,7 +184,7 @@ def gift():
 @app.route('/profile')
 @login_required
 def profile():
-    return redirect(url_for('profile/' + current_user.username))
+    return redirect('profile/'+current_user.username)
 
 
 if __name__ == '__main__': 
