@@ -12,12 +12,11 @@
     />
   </head>
   <body>
-    <div class="back-button"> &lt;&lt; </div>
     <main>{% block container %} {% endblock %}</main>
     <div class="footer_">
-        <button class="footer_button">Home</button>
-        <button class="footer_button">Gift</button>
-        <button class="footer_button">Profile</button>
+        <a href="{{ url_for('home')}}">Home</a>
+        <a href="{{ url_for('gift')}}">Gift</a>
+        <a href="{{ url_for('profile')}}">Profile</a>
     </div>
   </body>
 </html>

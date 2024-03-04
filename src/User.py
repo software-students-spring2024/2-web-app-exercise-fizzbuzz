@@ -9,10 +9,10 @@ from passlib.hash import pbkdf2_sha256
 class User(UserMixin):
     users : collection = None
 
-    def __init__(self, email: AnyStr, username: AnyStr, password: AnyStr, measurements: Dict = {}, posts: List[ObjectId] = [], friends: List = [], id: ObjectId = None) -> None:
+    def __init__(self, email: AnyStr, username: AnyStr, password: AnyStr, measurements: Dict = {'height':'?','weight':'?','pants':'?','shirt':'?','shoe':'?'}, posts: List[ObjectId] = [], friends: List = [], id: ObjectId = None) -> None:
         self.email = email.lower()
         self.username = username
-        self.measurements = measurements[:]
+        self.measurements = measurements
         self.posts = posts[:]
         self.friends = friends[:]
         if id:
@@ -46,11 +46,12 @@ class User(UserMixin):
     
     def to_BSON(self) -> Dict:
         bson_dict = {}
-        bson_dict["_id"] = self.id
+        if hasattr(self, 'id'):
+            bson_dict["_id"] = self.id
         bson_dict["email"] = self.email
         bson_dict["username"] = self.username
         bson_dict["password"] = self.password
-        bson_dict["measurements"] = self.measurements[:]
+        bson_dict["measurements"] = self.measurements
         bson_dict["posts"] = self.posts[:]
         bson_dict["friends"] = self.friends[:]
         return bson_dict
@@ -96,3 +97,18 @@ class User(UserMixin):
         if not user:
             user = None
         return user
+
+    def update_sizes(user, form_data):
+        user.measurements['height'] = form_data.get('height')
+        user.measurements['weight'] = form_data.get('weight')
+        user.measurements['shoe'] = form_data.get('shoe')
+        user.measurements['shirt'] = form_data.get('shirt')
+        user.measurements['pants'] = form_data.get('pants')
+
+        user.update_db()
+        return
+
+    def delete_profile(user):
+        filter_criteria={"username":user.username}
+        User.users.delete_one(filter_criteria)
+        return
