@@ -198,20 +198,14 @@ def upload_post():
 
     return render_template("upload_post.html", action= '/home/upload', button_text= 'Upload')
 
-
-@app.route('/gift')
-@login_required
-def gift():
-    return "Page not available yet"
-
 @app.route('/profile/')
 @login_required
 def profile():
     return redirect('/profile/'+current_user.username)
 
-@app.route('/friends-events')
+@app.route('/gift')
 @login_required
-def friends_events():
+def gift():
     friends_list = current_user.friends
     return render_template('friends_events.html', friends=friends_list)
   
