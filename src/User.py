@@ -15,6 +15,7 @@ class User(UserMixin):
         self.measurements = measurements
         self.posts = posts[:]
         self.friends = friends[:]
+        self.events = []
         if id:
             self.id = id
             self.password = password # Already encrypted
@@ -92,7 +93,7 @@ class User(UserMixin):
                 user = None
         return user
 
-    def get_username(username) -> Union[User, None]:
+    def get_from_username(username) -> Union[User, None]:
         user = User.from_BSON(User.users.find_one({"username": username}))
         if not user:
             user = None

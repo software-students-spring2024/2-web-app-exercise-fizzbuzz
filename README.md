@@ -2,9 +2,17 @@
 
 A little exercise to build a web application following an agile development process. See the [instructions](instructions.md) for more detail.
 
+## Team Members
+
+Dhiyaa Al Jorf
+
+Firas Darwish
+
+Shubhi Upadhyay (originally in team-p2, switching to team-fizzbuzz)
+
 ## Product vision statement
 
-See instructions. Delete this line and place the Product Vision Statement here.
+To revolutionize gift-giving into an enjoyable, collaborative journey of personalized discovery.
 
 ## User stories
 
