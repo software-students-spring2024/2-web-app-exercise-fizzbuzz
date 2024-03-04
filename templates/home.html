@@ -1,0 +1,23 @@
+{% extends 'base_search.html' %}
+
+{% block container %}
+
+    <h2>For You</h2>
+    <section class="posts">
+        {% for post in posts %}
+            <div class ="card">
+                <img src="static/img/placeholder.png" alt="placeholder">
+                <form action = "/home" method="POST">
+                    <input type="hidden" name="post_id" value="{{post.id}}" />
+                    {% if post.liked %}
+                        <button type="submit">unlike</button>
+                    {% else %}
+                        <button type="submit">like</button>
+                    {% endif %}
+                </form>
+            </div>
+        {% endfor %}
+
+    </section>
+
+{% endblock %}

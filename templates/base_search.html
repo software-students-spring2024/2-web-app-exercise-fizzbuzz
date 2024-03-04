@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Treasure Trove</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <link
+      rel="icon"
+      href="{{ url_for('static', filename='img/logo.png') }}"
+    />
+  </head>
+  <body>
+    <div>
+      <header>
+        <form id="search-form" action="/home" method="GET">
+          <!-- query_type is to be replaced with posts/friends/etc. -->
+          <input id="search" type ="search" name="query" placeholder="Search {{query_type}}..." autofocus>
+          <!-- <button type="submit">Go</button> -->
+        </form>
+
+        <form method="GET" action="{{action}}">
+          <button type="submit">{{button_text}}</button>
+        </form>
+      </header>
+
+
+      <main>{% block container %} {% endblock %}</main>
+
+
+      <footer>
+        <div class="navigation navigation-styled">
+          <nav>
+            <ul>
+              <li>
+                <a href="{{ url_for('home')}}">Home</a>
+              </li>
+              <li>
+                <a href="{{ url_for('gift')}}">Gift</a>
+              </li>
+              <li>
+                <a href="{{ url_for('profile')}}">Profile</a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>

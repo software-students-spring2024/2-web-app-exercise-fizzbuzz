@@ -6,11 +6,16 @@
 
         <div class="container">
 
-            <div class="card">
-                <h1 class="card_title">Create a new account</h1>
+            <h2>Create New Account</h2>
+            <div class="form-card-div">
                 <form action="/register" method="POST" class="card_form">
+                    <div class="error">{{error_message}}</div>
                     <div class="input">
-                        <input class="input_field" type="text" name="email" placeholder="Email..." required>
+                        <input class="input_field" type="text" name="username" placeholder="Username..." required>
+                        <label class="input_label" for="username">Username</label>
+                    </div>
+                    <div class="input">
+                        <input class="input_field" type="email" name="email" placeholder="Email..." required>
                         <label class="input_label" for="email">Email</label>
                     </div>
                     <div class="input">
@@ -18,12 +23,12 @@
                         <label class="input_label" for="password">Password</label>
                     </div>
                     <div class="input">
-                        <input class="input_field" type="password" name="confimr_password" placeholder="Confirm Password..." required>
+                        <input class="input_field" type="password" name="confirm_password" placeholder="Confirm Password..." required>
                         <label class="input_label" for="confirm_password">Confirm Password</label>
                     </div>
-                    <button class="card_button" type="submit">Register</button>
+                    <button class="form-button" type="submit">Register</button>
                 </form>
-                <div class="card_info">
+                <div class="form-info">
                     <p>Already Have an account <a href = "{{ url_for('login') }}">Log in</a></p>
                 </div>
             </div>

@@ -6,20 +6,21 @@
 
         <div class="container">
 
-            <div class="card">
-                <h1 class="card_title">Login to your account</h1>
-                <form class="card_form" action="/login" method="POST">
+            <h2>Login to Your Account</h2>
+            <div class="form-card-div">
+                <form class="form-card" action="/login" method="POST">
                     <div class="input">
-                        <input class="input_field" type="text" name="email" placeholder="Email..." required>
-                        <label class="input_label" for="email">Email</label>
+                        <input class="input_field" type="text" name="username_email" placeholder="Username or Email..." required>
+                        <label class="input_label" for="username_email">Username or Email</label>
+                        <label class="input_label" class="error" for="email">{{error_message}}</label>
                     </div>
                     <div class="input">
                         <input class="input_field" type="password" name="password" placeholder="Password..." required>
                         <label class="input_label" for="password">Password</label>
                     </div>
-                    <button class="card_button" type="submit">Log In</button>
+                    <button class="form-button" type="submit">Log In</button>
                 </form>
-                <div class="card_info">
+                <div class="form-info">
                     <p>Not registered? <a href = "{{ url_for('register') }}">Create an account</a></p>
                 </div>
             </div>
