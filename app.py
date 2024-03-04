@@ -2,11 +2,12 @@ import pymongo
 from bson.objectid import ObjectId
 import datetime
 from dotenv import dotenv_values
-from flask import Flask, render_template, request, redirect, abort, url_for, session, make_response, send_from_directory
+from flask import Flask, render_template, request, redirect, abort, url_for, session, make_response, send_from_directory, flash
 from flask_login import AnonymousUserMixin, login_required, LoginManager, login_user, current_user, logout_user
 from src.User import *
 from src.NestedCollection import *
 from src.Post import *
+from src.Event import *
 
 
 # Loading development configurations
@@ -53,6 +54,10 @@ Post.posts = SE2_DB["posts"]
 if "chats" not in SE2_DB:
     SE2_DB.add_collection("chats", "SE_PROJECT2_chats")
 chats = SE2_DB["chats"]
+
+if "events" not in SE2_DB:
+    SE2_DB.add_collection("events","SE_PROJECT2_events")
+Event.events = SE2_DB["events"]
 
 
 # Signing up and logging in
@@ -109,6 +114,7 @@ def show_profile(username):
         if(request.method=="POST"):
             # Assuming you have a method in your User class to update sizes
             User.update_sizes(user, request.form) #can change username to current_user.username
+            
             return redirect(url_for('show_profile', username=username))
     else:
         friend=False
@@ -123,7 +129,13 @@ def show_profile(username):
             return render_template("profile_is_friend.html",user=user, friends_size=friends_size,bookmarks_size=bookmarks_size)
         else:
             # give page that says user is not friend 
-            return render_template("profile_is_not_friend.html")
+            if(request.method=="GET"):
+                friends_size = len(user.friends)
+                bookmarks_size = len(user.posts)
+                return render_template("profile_is_not_friend.html", user=user,friends_size=friends_size,bookmarks_size=bookmarks_size)
+            if(request.method=="POST"):
+                User.add_friend_from_profile(user,current_user)
+                return redirect(url_for('show_profile', username=username))
 
 @app.route("/delete_profile/", methods=['POST'])
 @login_required
@@ -133,6 +145,24 @@ def delete_profile():
     
     # Redirect to a page or route after profile deletion
     return redirect(url_for('logout'))
+
+@app.route('/announce_my_event/',methods=['GET','POST'])
+@login_required
+def announce_my_event():
+    user = current_user # who is itneracting
+    if(request.method=="GET"):
+        return render_template("announce_my_event.html", user=user)
+    if(request.method == 'POST'):
+        eventname = request.form['eventname']
+        time = request.form['time']
+        date = request.form['date']
+        place = request.form['place']
+        friends_selected = request.form.getlist('friends_selected')
+        if Event.Already_Exists(eventname):
+            return render_template("announce_my_event.html", user=user, error_message = 'Event already exists!') #check error_message
+        event = Event(user.username, eventname, time, date, place, friends_selected)
+        flash("Success! Event created successfully.", "success") #check
+        return redirect(url_for('show_profile',username=current_user.username))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

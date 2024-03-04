@@ -113,3 +113,11 @@ class User(UserMixin):
         filter_criteria={"username":user.username}
         User.users.delete_one(filter_criteria)
         return
+    
+    def add_friend_from_profile(user, current_user):
+        user.friends.append(current_user.username)
+        user.update_db()
+
+        current_user.friends.append(user.username)
+        current_user.update_db()
+        return

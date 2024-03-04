@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="path/to/your/css/style.css">
+    <title>Announce My Event</title>
+</head>
+
+<body>
+    <div class="container">
+        <h3>Announce My Event</h3>
+        <h5>Create an event to share with friends</h5>
+
+        <form action="{{ url_for('announce_my_event') }}" method="post">
+            <label for="eventname">Event Name:</label>
+            <input type="text" name="eventname" required>
+
+            <label for="time">Time:</label>
+            <input type="text" name="time" required>
+
+            <label for="date">Date:</label>
+            <input type="text" name="date" required>
+
+            <label for="place">Place:</label>
+            <input type="text" name="place" required>
+
+            {% for item in user.friends %}
+                <label>
+                    <input type="checkbox" name="friends_selected" value="{{ item }}">
+                    {{ item }}
+                </label><br>
+            {% endfor %}
+
+            <input type="submit" value="Create Event" class="button">
+        </form>
+    </div>
+</body>
+
+</html>
