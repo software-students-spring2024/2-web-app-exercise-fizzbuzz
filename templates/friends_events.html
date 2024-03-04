@@ -1,18 +1,6 @@
 {% extends 'base_search.html' %}
 
 {% block content %}
-
-<h1>Events</h1>
-<ul>
-    {% for event in events %}
-    <li>
-      <a href="{{ url_for('event', event_id=event.id) }}">{{ event.name }}</a>
-    </li>
-    {% else %}
-    <li>No events found.</li>
-    {% endfor %}
-  </ul>
-
 <h1>Friends</h1>
 <ul>
     {% for friend in friends %}
@@ -23,5 +11,4 @@
     <li>No friends found.</li>
     {% endfor %}
   </ul>
-
 {% endblock %}
