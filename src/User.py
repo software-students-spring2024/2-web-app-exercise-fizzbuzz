@@ -110,6 +110,12 @@ class User(UserMixin):
         return
 
     def delete_profile(user):
+        for friend in user.friends:
+            friend_user_BSON = User.users.find_one({"username":friend})
+            friend_user = User.from_BSON(friend_user_BSON)
+            friend_user.friends.remove(user.username)
+            friend_user.update_db()
+
         filter_criteria={"username":user.username}
         User.users.delete_one(filter_criteria)
         return
