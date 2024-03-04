@@ -237,10 +237,15 @@ def profile():
 @login_required
 def gift():
     friends_list = current_user.friends
-    events_list = [
-    {"name": "Maria's Birthday", "date": "2023-04-15"},
-    {"name": "John's Graduation", "date": "2023-05-22"},
-    {"name": "Sara's Wedding", "date": "2023-06-11"}]
+    events_cursor = Event.events.find({})
+    events_list = [{
+        "name": event.get("eventname"),
+        "date": event.get("date"),
+        "time": event.get("time"),
+        "place": event.get("place"),
+        "host": event.get("eventhost", "Unknown"),  # Use a default value if host isn't set
+        "friends_in_event": ", ".join(event.get("friends_in_event", []))  # Convert list of friends to a comma-separated string
+    } for event in events_cursor]
     return render_template('friends_events.html', friends=friends_list, events = events_list)
   
 
