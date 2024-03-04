@@ -110,91 +110,128 @@
 
 {% extends 'base_title.html' %}
 
+
 {% block container %}
 
-    <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Profile Picture" id="profile-picture">
+{% if type|string() == "nf" %}
+
+    <h2> Error! User not found! </h2>
+
+{% else %}
 
 
-    <h2> {{ user.username }} 
-        <br>
-        <a style="font-size: 2vw; margin-top: 1vh" class="form-button" href="{{ url_for('logout')}}">Log out</a>
-    </h2>
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Profile Picture" id="profile-picture">
 
-    <div id="friend-bookmark-container">
-        <div>Friends: {{ friends_size }}</div>
-        <div>Bookmarks: {{ bookmarks_size }} </div>
-    </div>
 
-    <form action="{{ url_for('announce_my_event') }}" method="get" id="announce_event_form">
-        <button type="submit" class="form-button">Announce Event</button>
-    </form>
+        <h2> {{ user.username }} 
+            <br>
+            {% if type|string() == "current" %}
+                <a style="font-size: 2vw; margin-top: 1vh" class="form-button" href="{{ url_for('logout')}}">Log out</a>
+            {% endif %}
+        </h2>
 
-    {% if editing %}
-    <div id="user-sizes">
-        <h2>Update Size Information</h2>
-        <div class="form-card-div" class="modal">
-            <form class="form" action="{{ url_for('show_profile', username=user.username) }}" method="post">
-                <div class="input">
-                    <input class="input_field" type="text" name="height" value="{{ user.measurements['height'] }}" required>
-                    <label class="input_label" for="height">Height (cm):</label>
-                </div>
+        <div id="friend-bookmark-container">
+            <div>Friends: {{ friends_size }}</div>
+            <div>Bookmarks: {{ bookmarks_size }} </div>
+        </div>
 
-                <div class="input">
-                    <input class="input_field" type="text" name="weight" value="{{ user.measurements['weight'] }}" required>
-                    <label class="input_label" for="weight">Weight (kg):</label>
-                </div>
+        {% if type|string() == "stranger" %}
+            <form action="{{ url_for('show_profile', username=user.username) }}" method="post" id="add_friend">
+                <button type="submit" class="form-button">Add Friend</button>
+            </form>     
 
-                <div class="input">
-                    <input class="input_field" type="text" name="shoe" value="{{ user.measurements['shoe'] }}" required>
-                    <label class="input_label" for="shoe">Shoe (EU):</label>
-                </div>
-
-                <div class="input">
-                    <input class="input_field" type="text" name="shirt" value="{{ user.measurements['shirt'] }}" required>
-                    <label class="input_label" for="shirt">Shirt:</label>
-                </div>
-
-                <div class="input">
-                    <input class="input_field" type="text" name="pants" value="{{ user.measurements['pants'] }}" required>
-                    <label class="input_label" for="pants">Pants:</label>
-                </div>
-                <button class="form-button" type="submit">Save Changes</button>
-            </form>
-        </div>            
-        <!-- Display user sizes -->
-    </div>
-
-    {% else %}
-    <form>
-        <input name="mode" value="editing" hidden>
-        <button class="form-button" type="submit">Edit Measurements</button>
-    </form>
-    <h2>Measurements</h2>
-    <div>
-        <div>Height: {{ user.measurements['height'] }} cm</div>
-        <div>Weight: {{ user.measurements['weight'] }} kg </div>
-        <div>Shoe: {{ user.measurements['shoe'] }} (EU)</div>
-        <div>Shirt: {{ user.measurements['shirt'] }}</div>
-        <div>Pants: {{ user.measurements['pants'] }}</div>
-    </div>
-    {% endif %}
-
-    <h2>Liked Posts</h2>
-    <section class="posts">
-        {% for post in user.posts %}
-            <div class ="card">
-                <img src="{{ url_for('static', filename='img/placeholder.png') }}" alt="placeholder">
-                <form action = "/home" method="POST">
-                    <input type="hidden" name="post_id" value="{{post.id}}" />
-                </form>
+            <h2>Liked Posts</h2>
+            <div>
+                <div>This user is not a friend. Add them as friends to see their posts</div>
             </div>
-        {% endfor %}
 
-    </section>
+        {% else %}
 
-    
-    <form action="{{ url_for('delete_profile') }}" method="post" id="delete-form">
-        <button  type="submit" id="delete-button">Delete Profile</button>
-    </form>
+            {% if type|string() == "current" %}
+                <form action="{{ url_for('announce_my_event') }}" method="get" id="announce_event_form">
+                    <button type="submit" class="form-button">Announce Event</button>
+                </form>
+            {% else %}
+            
+                <br>
+                <br>
 
+                <a class="form-button" href="#">Send Message</a>
+                <button class="form-button"> Gift </button>
+            {% endif %}
+
+            {% if editing and type|string() == "current" %}
+                <div id="user-sizes">
+                    <h2>Update Size Information</h2>
+                    <div class="form-card-div" class="modal">
+                        <form class="form" action="{{ url_for('show_profile', username=user.username) }}" method="post">
+                            <div class="input">
+                                <input class="input_field" type="text" name="height" value="{{ user.measurements['height'] }}" required>
+                                <label class="input_label" for="height">Height (cm):</label>
+                            </div>
+
+                            <div class="input">
+                                <input class="input_field" type="text" name="weight" value="{{ user.measurements['weight'] }}" required>
+                                <label class="input_label" for="weight">Weight (kg):</label>
+                            </div>
+
+                            <div class="input">
+                                <input class="input_field" type="text" name="shoe" value="{{ user.measurements['shoe'] }}" required>
+                                <label class="input_label" for="shoe">Shoe (EU):</label>
+                            </div>
+
+                            <div class="input">
+                                <input class="input_field" type="text" name="shirt" value="{{ user.measurements['shirt'] }}" required>
+                                <label class="input_label" for="shirt">Shirt:</label>
+                            </div>
+
+                            <div class="input">
+                                <input class="input_field" type="text" name="pants" value="{{ user.measurements['pants'] }}" required>
+                                <label class="input_label" for="pants">Pants:</label>
+                            </div>
+                            <button class="form-button" type="submit">Save Changes</button>
+                        </form>
+                    </div>            
+                    <!-- Display user sizes -->
+                </div>
+
+            {% else %}
+                {% if type|string() == "current" %}
+                <form>
+                    <input name="mode" value="editing" hidden>
+                    <button class="form-button" type="submit">Edit Measurements</button>
+                </form>
+                {% endif %}
+                <h2>Measurements</h2>
+                <div>
+                    <div>Height: {{ user.measurements['height'] }} cm</div>
+                    <div>Weight: {{ user.measurements['weight'] }} kg </div>
+                    <div>Shoe: {{ user.measurements['shoe'] }} (EU)</div>
+                    <div>Shirt: {{ user.measurements['shirt'] }}</div>
+                    <div>Pants: {{ user.measurements['pants'] }}</div>
+                </div>
+            {% endif %}
+
+            <h2>Liked Posts</h2>
+            <section class="posts">
+                {% for post in user.posts %}
+                    <div class ="card">
+                        <img src="{{ url_for('static', filename='img/placeholder.png') }}" alt="placeholder">
+                        <form action = "/home" method="POST">
+                            <input type="hidden" name="post_id" value="{{post.id}}" />
+                        </form>
+                    </div>
+                {% endfor %}
+
+            </section>
+
+            {% if type|string() == "current" %}
+                <form action="{{ url_for('delete_profile') }}" method="post" id="delete-form">
+                    <button  type="submit" id="delete-button">Delete Profile</button>
+                </form>
+            {% endif %}
+        
+        {% endif %}
+
+{% endif %}
 {% endblock %}
