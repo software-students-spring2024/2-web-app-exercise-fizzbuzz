@@ -1,41 +1,42 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends 'base_title.html' %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="path/to/your/css/style.css">
-    <title>Announce My Event</title>
-</head>
+{% block container %}
 
-<body>
-    <div class="container">
-        <h3>Announce My Event</h3>
-        <h5>Create an event to share with friends</h5>
+    <section>
+        <div class="container">
+            <h2>Create an event to share with friends</h2>
+            <div class="form-card-div">
+                <form class="form" action="{{ url_for('announce_my_event') }}" method="post">
+                    <div class="input">
+                        <input class="input_field" type="text" name="eventname" required>
+                        <label class="input_label" for="eventname">Event Name:</label>
+                    </div>
 
-        <form action="{{ url_for('announce_my_event') }}" method="post">
-            <label for="eventname">Event Name:</label>
-            <input type="text" name="eventname" required>
+                    <div class="input">
+                        <input class="input_field" type="text" name="time" required>
+                        <label class="input_label" for="time">Time:</label>
+                    </div>
 
-            <label for="time">Time:</label>
-            <input type="text" name="time" required>
+                    <div class="input">
+                        <input class="input_field" type="text" name="date" required>
+                        <label class="input_label" for="date">Date:</label>
+                    </div>
 
-            <label for="date">Date:</label>
-            <input type="text" name="date" required>
+                    <div class="input">
+                    <input class="input_field" type="text" name="place" required>
+                    <label class="input_label" for="place">Place:</label>
+                    </div>
+                
+                    {% for item in user.friends %}
+                        <label class="input_label">
+                            <input type="checkbox" name="friends_selected" value="{{ item }}">
+                            {{ item }}
+                        </label><br>
+                    {% endfor %}
 
-            <label for="place">Place:</label>
-            <input type="text" name="place" required>
-
-            {% for item in user.friends %}
-                <label>
-                    <input type="checkbox" name="friends_selected" value="{{ item }}">
-                    {{ item }}
-                </label><br>
-            {% endfor %}
-
-            <input type="submit" value="Create Event" class="button">
-        </form>
-    </div>
-</body>
-
-</html>
+                    <input type="submit" value="Create Event" class="form-button">
+                </form>
+            </div>
+        </div>
+    </section>
+{% endblock %}

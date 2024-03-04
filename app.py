@@ -151,7 +151,7 @@ def delete_profile():
 def announce_my_event():
     user = current_user # who is itneracting
     if(request.method=="GET"):
-        return render_template("announce_my_event.html", user=user)
+        return render_template("announce_my_event.html", user=user, title="Announce My Event")
     if(request.method == 'POST'):
         eventname = request.form['eventname']
         time = request.form['time']
