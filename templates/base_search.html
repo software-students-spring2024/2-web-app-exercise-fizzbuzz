@@ -2,10 +2,10 @@
 <html>
   <head>
     <title>Treasure Trove</title>
-    <!-- <link
+    <link
       rel="stylesheet"
       href="{{ url_for('static', filename='css/style.css') }}"
-    /> -->
+    />
     <link
       rel="icon"
       href="{{ url_for('static', filename='img/logo.png') }}"
@@ -14,14 +14,15 @@
   <body>
     <div>
       <header>
-        <form action="/home" metho="GET">
+        <form id="search-form" action="/home" method="GET">
           <!-- query_type is to be replaced with posts/friends/etc. -->
-          <input type ="search" name="query" placeholder="Search {{query_type}}...">
-          <button type="submit">Search</button>
+          <input id="search" type ="search" name="query" placeholder="Search {{query_type}}..." autofocus>
+          <!-- <button type="submit">Go</button> -->
         </form>
-        <nav>
-          <a href="{{ url_for('logout')}}">Log out</a>
-        </nav>
+
+        <form method="GET" action="{{action}}">
+          <button type="submit">{{button_text}}</button>
+        </form>
       </header>
 
 
@@ -29,11 +30,21 @@
 
 
       <footer>
-        <nav>
-          <a href="{{ url_for('home')}}">Home</a>
-          <a href="{{ url_for('gift')}}">Gift</a>
-          <a href="{{ url_for('profile')}}">Profile</a>
-        </nav>
+        <div class="navigation navigation-styled">
+          <nav>
+            <ul>
+              <li>
+                <a href="{{ url_for('home')}}">Home</a>
+              </li>
+              <li>
+                <a href="{{ url_for('gift')}}">Gift</a>
+              </li>
+              <li>
+                <a href="{{ url_for('profile')}}">Profile</a>
+              </li>
+            </ul>
+          </nav>
+        </div>
       </footer>
     </div>
   </body>
