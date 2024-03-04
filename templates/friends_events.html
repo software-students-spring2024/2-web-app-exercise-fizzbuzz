@@ -1,0 +1,11 @@
+{% extends 'base_search.html' %}
+{% block container %}
+  <h1>Friends</h1>
+  <ul>
+    {% for friend in friends %}
+    <li>{{ friend }}</li>
+{% else %}
+    <p>No friends to show.</p>
+{% endfor %}
+  </ul>
+{% endblock %}

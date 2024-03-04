@@ -15,6 +15,7 @@ class User(UserMixin):
         self.measurements = measurements
         self.posts = posts[:]
         self.friends = friends[:]
+        self.events = []
         if id:
             self.id = id
             self.password = password # Already encrypted
