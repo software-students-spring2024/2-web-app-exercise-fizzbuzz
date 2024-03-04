@@ -90,30 +90,46 @@ def register():
         login_user(user)
         return redirect(url_for('home'))
 
-@app.route("/profile/<string:username>", methods=['GET'])
+@app.route("/profile/<string:username>", methods=['GET',"POST"])
+@login_required
 def show_profile(username):
     user = User.get_username(username)
     if(user == None):
         # give page that says user not found
-        return render_template("user_not_found.html")
+        return render_template("profile_not_found.html")
     elif(current_user.username == username):
-        friends_size = len(user.friends)
-        bookmarks_size = len(user.posts)
+        if(request.method=="GET"):
+            friends_size = len(user.friends)
+            bookmarks_size = len(user.posts)
         
-        return render_template("profile.html", user=user, friends_size=friends_size, bookmarks_size = bookmarks_size)
+            return render_template("profile.html", user=user, friends_size=friends_size, bookmarks_size = bookmarks_size)
+        if(request.method=="POST"):
+            # Assuming you have a method in your User class to update sizes
+            User.update_sizes(user, request.form) #can change username to current_user.username
+            return redirect(url_for('show_profile', username=username))
     else:
         friend=False
         for possible_friend in current_user.friends:
-            document_possible_friend = User.users.find_one({'_id': possible_friend})
-            if document_possible_friend['username']==username:
+            if possible_friend==username:
                 friend=True
                 break
         if(friend == True):
             # give page that says user is friend 
-            return render_template("profile_is_friend.html")
+            friends_size = len(user.friends)
+            bookmarks_size = len(user.posts)
+            return render_template("profile_is_friend.html",user=user, friends_size=friends_size,bookmarks_size=bookmarks_size)
         else:
             # give page that says user is not friend 
             return render_template("profile_is_not_friend.html")
+
+@app.route("/delete_profile/", methods=['POST'])
+@login_required
+def delete_profile():
+    # Assuming you have a method in your User class to delete the profile
+    User.delete_profile(current_user)
+    
+    # Redirect to a page or route after profile deletion
+    return redirect(url_for('logout'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -185,10 +201,10 @@ def upload_post():
 def gift():
     return "Page not available yet"
 
-@app.route('/profile')
+@app.route('/profile/')
 @login_required
 def profile():
-    return redirect('profile/'+current_user.username)
+    return redirect('/profile/'+current_user.username)
 
 
 if __name__ == '__main__': 
