@@ -8,12 +8,16 @@ class Post:
 
     posts: collection = None
 
-    def __init__(self, id: ObjectId, title: AnyStr, labels: List[AnyStr], author: ObjectId) -> None:
-        self.id = id
+    def __init__(self, title: AnyStr, labels: List[AnyStr], author: ObjectId, id: ObjectId = None) -> None:
         self.title = title
         self.labels = labels[:]
         self.author = author
         self.liked = False
+        if id:
+            self.id = id
+        else:
+            self.id = ObjectId()
+            Post.posts.insert_one(self.to_BSON())
 
     def matches_query(self, query_labels: List[AnyStr]) -> bool:
         matches = False
@@ -72,6 +76,13 @@ class Post:
             return True
         else:
             return False
+        
+    def upload_new_post(current_user: User, title: AnyStr, labels: List[AnyStr]) -> Post:
+        new_post = Post(title=  title,
+                    labels= labels,
+                    author= current_user.get_id())
+        Post.toggle_in_current_user(new_post.get_id(), current_user)
+        return new_post
 
     def to_BSON(self) -> Dict:
         bson_dict = {}

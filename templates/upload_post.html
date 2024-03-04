@@ -1,0 +1,24 @@
+{% extends 'base_search.html' %}
+
+{% block container %}
+
+    <h2>Upload New Post</h2>
+    <section class="upload_post">
+        <div class ="container">
+            <div class = "form-card-div">
+                <form action="/home/upload" method="POST">
+                    <div class="input">
+                        <input class="input_field" name="title" placeholder="Post Title.." type="text" required>
+                        <label class="input_label" for="title">Title</label>
+                    </div>
+                    <div class="input">
+                        <input class="input_field" name="labels" placeholder="Space-separated Labels.." type="text" required>
+                        <label class="input_label" for="labels">Labels</label>
+                    </div>
+                    <input class="form-button" type="submit" value="Submit">
+                </form>
+            </div>
+        </div>
+    </section>
+
+{% endblock %}

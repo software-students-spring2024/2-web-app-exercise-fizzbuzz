@@ -50,16 +50,6 @@ if "posts" not in SE2_DB:
     SE2_DB.add_collection("posts", "SE_PROJECT2_posts")
 Post.posts = SE2_DB["posts"]
 
-# To be replaced with fetching from database
-# all_posts = [Post(ObjectId(), "Post 1", ['happy', 'joy', 'excited'], ObjectId()),
-#                 Post(ObjectId(), "Post 2", ['sad', 'upset', 'unhappy'], ObjectId()), 
-#                 Post(ObjectId(), "Post 3", ['happy', 'calm', 'relaxation'], ObjectId()), 
-#                 Post(ObjectId(), "Post 4", ['upset', 'depressed'], ObjectId()),
-#                 Post(ObjectId(), "Post 5", ['dance', 'party', 'joy'], ObjectId()),
-#                 Post(ObjectId(), "Post 6", ['happy', 'glad'], ObjectId()),
-#                 Post(ObjectId(), "Post 7", ['book', 'library'], ObjectId()),
-#                 Post(ObjectId(), "Post 8", ['rage', 'anger', 'upset'], ObjectId()),]
-
 if "chats" not in SE2_DB:
     SE2_DB.add_collection("chats", "SE_PROJECT2_chats")
 chats = SE2_DB["chats"]
@@ -146,6 +136,8 @@ def login():
 @login_required
 def logout():
     logout_user()
+    if 'query' in session:
+        session.pop('query')
     return redirect(url_for('login'))
 
 
@@ -160,11 +152,11 @@ def show():
 @login_required
 def home(query= None):
     if request.method == "POST":
-        Post.toggle_in_current_user(request.form.get('post_id'), current_user)
-        return redirect(url_for("home", query= session['query'] if 'query' in session else None))
+        if request.form.get('post_id'):
+            Post.toggle_in_current_user(request.form.get('post_id'), current_user)
+            return redirect(url_for("home", query= session['query'] if 'query' in session else None))
             
     # request.method = "GET"
-    print(request.query_string)
     query = request.args.get('query') if (request.query_string != b'') else query if query else None
     if query == '':
         session['query'] = query
@@ -174,7 +166,19 @@ def home(query= None):
         session['query'] = query
         query_labels = [label.strip() for label in query.split(' ')]
     posts = Post.fetch_posts(current_user= current_user, query_labels= query_labels)
-    return render_template("home.html", query_type="posts", posts = posts)
+    return render_template("home.html", query_type="posts", posts = posts, action= '/home/upload', button_text= 'Upload')
+
+@app.route('/home/upload', methods=["GET", "POST"])
+@login_required
+def upload_post():
+    if request.method == "POST":
+        title = request.form.get("title")
+        labels = [label.strip() for label in request.form.get("labels").split()]
+        Post.upload_new_post(current_user, title, labels)
+        return redirect(url_for("home"))
+
+    return render_template("upload_post.html", action= '/home/upload', button_text= 'Upload')
+
 
 @app.route('/gift')
 @login_required
