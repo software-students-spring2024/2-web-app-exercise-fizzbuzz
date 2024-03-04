@@ -1,5 +1,15 @@
 {% extends 'base_search.html' %}
 {% block container %}
+
+<h1>Events</h1>
+  <ul>
+    {% for event in events %}
+      <li>{{ event.name }} - {{ event.date }}</li>
+    {% else %}
+      <p>No events to show.</p>
+    {% endfor %}
+  </ul>
+
   <h1>Friends</h1>
   <ul>
     {% for friend in friends %}

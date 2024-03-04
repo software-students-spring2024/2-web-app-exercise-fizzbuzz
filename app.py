@@ -237,7 +237,11 @@ def profile():
 @login_required
 def gift():
     friends_list = current_user.friends
-    return render_template('friends_events.html', friends=friends_list)
+    events_list = [
+    {"name": "Maria's Birthday", "date": "2023-04-15"},
+    {"name": "John's Graduation", "date": "2023-05-22"},
+    {"name": "Sara's Wedding", "date": "2023-06-11"}]
+    return render_template('friends_events.html', friends=friends_list, events = events_list)
   
 
 
