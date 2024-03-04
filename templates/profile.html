@@ -108,154 +108,89 @@
 </body>
 </html> -->
 
-{% extends 'profile_base.html' %}
+{% extends 'base_title.html' %}
 
 {% block container %}
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-        }
+    <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Profile Picture" id="profile-picture">
 
-        .profile-container {
-            max-width: 100%;
-            padding: 20px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            box-sizing: border-box;
-            margin: 10px;
-        }
 
-        #profile-picture {
-            max-width: 100%;
-            border-radius: 50%;
-            margin-bottom: 15px;
-        }
+    <h2> {{ user.username }} 
+        <br>
+        <a style="font-size: 2vw; margin-top: 1vh" class="form-button" href="{{ url_for('logout')}}">Log out</a>
+    </h2>
 
-        #name, #username {
-            font-size: 1.5em;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
+    <div id="friend-bookmark-container">
+        <div>Friends: {{ friends_size }}</div>
+        <div>Bookmarks: {{ bookmarks_size }} </div>
+    </div>
 
-        #friend-bookmark-container {
-            margin-bottom: 15px;
-        }
-
-        .action-button, button {
-            display: block;
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-            background-color: #4CAF50;
-            color: white;
-            text-decoration: none;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .action-button:hover, button:hover {
-            background-color: #45a049;
-        }
-
-        #user-sizes {
-            margin-top: 20px;
-        }
-
-        #posts {
-            margin-top: 20px;
-        }
-
-        #posts ul {
-            list-style-type: none;
-            padding: 0;
-        }
-
-        #posts li {
-            border-bottom: 1px solid #ccc;
-            padding: 10px 0;
-        }
-
-        #delete-button {
-            padding: 5px 10px; /* Adjust padding to make the button smaller */
-            font-size: 12px;   /* Adjust font size to make the button text smaller */
-            background-color: #dc3545; /* Red color for a delete button, you can change it */
-            color: #fff; /* White text for better visibility, you can change it */
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        #delete-button:hover {
-            background-color: #bd2130; /* Darker red color on hover, you can change it */
-        }
-    </style>
-
-    <div class="profile-container">
-
-        <form action="{{ url_for('delete_profile') }}" method="post" id="delete-form">
-            <button type="submit" id="delete-button">Delete Profile</button>
-        </form>
-
-        <a href="{{ url_for('logout')}}">Log out</a>
-
-        <img src="profile-picture.jpg" alt="Profile Picture" id="profile-picture">
-
-        <div id="name"> {{ user.username }} </div>
-
-        <div id="friend-bookmark-container">
-            <div>Friends: {{ friends_size }}</div>
-            <div>Bookmarks: {{ bookmarks_size }} </div>
-        </div>
-
-     <a href="#" class="action-button">Add Friend</a>
-        <a href="#" class="action-button">Send Message</a>
-
-        <button> Gift </button>
-
-        <div id="user-sizes">
-            <h3>Size Information</h3>
-            <div id="edit-sizes-modal" class="modal">
-                <div class="modal-content">
-                    <form action="{{ url_for('show_profile', username=user.username) }}" method="post">
-                        <label for="height">Height (cm):</label>
-                        <input type="text" name="height" value="{{ user.measurements['height'] }}" required>
-
-                        <label for="weight">Weight (kg):</label>
-                        <input type="text" name="weight" value="{{ user.measurements['weight'] }}" required>
-
-                        <label for="shoe">Shoe (EU):</label>
-                        <input type="text" name="shoe" value="{{ user.measurements['shoe'] }}" required>
-
-                        <label for="shirt">Shirt:</label>
-                        <input type="text" name="shirt" value="{{ user.measurements['shirt'] }}" required>
-                        
-                        <label for="pants">Pants:</label>
-                        <input type="text" name="pants" value="{{ user.measurements['pants'] }}" required>
-                
-                        <input type="submit" value="Save Changes">
-                    </form>
+    {% if editing %}
+    <div id="user-sizes">
+        <h2>Update Size Information</h2>
+        <div class="form-card-div" class="modal">
+            <form class="form" action="{{ url_for('show_profile', username=user.username) }}" method="post">
+                <div class="input">
+                    <input class="input_field" type="text" name="height" value="{{ user.measurements['height'] }}" required>
+                    <label class="input_label" for="height">Height (cm):</label>
                 </div>
-            </div>            
-            <!-- Display user sizes -->
-            <div>Height: {{ user.measurements['height'] }} cm</div>
-            <div>Weight: {{ user.measurements['weight'] }} kg </div>
-            <div>Shoe: {{ user.measurements['shoe'] }} (EU)</div>
-            <div>Shirt: {{ user.measurements['shirt'] }}</div>
-            <div>Pants: {{ user.measurements['pants'] }}</div>
-        </div>
+
+                <div class="input">
+                    <input class="input_field" type="text" name="weight" value="{{ user.measurements['weight'] }}" required>
+                    <label class="input_label" for="weight">Weight (kg):</label>
+                </div>
+
+                <div class="input">
+                    <input class="input_field" type="text" name="shoe" value="{{ user.measurements['shoe'] }}" required>
+                    <label class="input_label" for="shoe">Shoe (EU):</label>
+                </div>
+
+                <div class="input">
+                    <input class="input_field" type="text" name="shirt" value="{{ user.measurements['shirt'] }}" required>
+                    <label class="input_label" for="shirt">Shirt:</label>
+                </div>
+
+                <div class="input">
+                    <input class="input_field" type="text" name="pants" value="{{ user.measurements['pants'] }}" required>
+                    <label class="input_label" for="pants">Pants:</label>
+                </div>
+                <button class="form-button" type="submit">Save Changes</button>
+            </form>
+        </div>            
+        <!-- Display user sizes -->
     </div>
-    <div id="posts">
-        <ul>
-            {% for post in user.posts %}
-            <li> {{ post }} </li>
-            {% endfor %}
-        </ul>
+
+    {% else %}
+    <form>
+        <input name="mode" value="editing" hidden>
+        <button class="form-button" type="submit">Edit Measurements</button>
+    </form>
+    <h2>Measurements</h2>
+    <div>
+        <div>Height: {{ user.measurements['height'] }} cm</div>
+        <div>Weight: {{ user.measurements['weight'] }} kg </div>
+        <div>Shoe: {{ user.measurements['shoe'] }} (EU)</div>
+        <div>Shirt: {{ user.measurements['shirt'] }}</div>
+        <div>Pants: {{ user.measurements['pants'] }}</div>
     </div>
+    {% endif %}
+
+    <h2>Liked Posts</h2>
+    <section class="posts">
+        {% for post in user.posts %}
+            <div class ="card">
+                <img src="{{ url_for('static', filename='img/placeholder.png') }}" alt="placeholder">
+                <form action = "/home" method="POST">
+                    <input type="hidden" name="post_id" value="{{post.id}}" />
+                </form>
+            </div>
+        {% endfor %}
+
+    </section>
+
+    
+    <form action="{{ url_for('delete_profile') }}" method="post" id="delete-form">
+        <button  type="submit" id="delete-button">Delete Profile</button>
+    </form>
 
 {% endblock %}

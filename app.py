@@ -93,7 +93,7 @@ def register():
 @app.route("/profile/<string:username>", methods=['GET',"POST"])
 @login_required
 def show_profile(username):
-    user = User.get_username(username)
+    user = User.get_from_username(username)
     if(user == None):
         # give page that says user not found
         return render_template("profile_not_found.html")
@@ -101,8 +101,11 @@ def show_profile(username):
         if(request.method=="GET"):
             friends_size = len(user.friends)
             bookmarks_size = len(user.posts)
-        
-            return render_template("profile.html", user=user, friends_size=friends_size, bookmarks_size = bookmarks_size)
+            editing = False
+            if hasattr(request, 'query_string'):
+                if request.args.get('mode') == 'editing':
+                    editing = True
+            return render_template("profile.html", user=user, title= user.username, editing = editing, friends_size=friends_size, bookmarks_size = bookmarks_size)
         if(request.method=="POST"):
             # Assuming you have a method in your User class to update sizes
             User.update_sizes(user, request.form) #can change username to current_user.username

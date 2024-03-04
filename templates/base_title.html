@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Treasure Trove</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <link
+      rel="icon"
+      href="{{ url_for('static', filename='img/logo.png') }}"
+    />
+  </head>
+  <body>
+    <div>
+      <header class="title-header">
+        <h1>
+        {% if title %}
+            {{title}}
+        {% else %}
+            Treasure Trove
+        {% endif %}
+        </h1>
+      </header>
+
+
+      <main>{% block container %} {% endblock %}</main>
+
+
+      <footer>
+        <div class="navigation navigation-styled">
+          <nav>
+            <ul>
+              <li>
+                <a href="{{ url_for('home')}}">Home</a>
+              </li>
+              <li>
+                <a href="{{ url_for('gift')}}">Gift</a>
+              </li>
+              <li>
+                <a href="{{ url_for('profile')}}">Profile</a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>
